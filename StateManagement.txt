@@ -1,0 +1,120 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.SessionState;
+
+namespace WebApplication23
+{
+    public class Global : System.Web.HttpApplication
+    {
+        protected void Application_Start(object sender, EventArgs e)
+        {
+            Application["count"] = 0;
+        }
+        protected void Session_Start(object sender, EventArgs e)
+        {
+            Application.Lock();
+            Application["count"] = (int)Application["count"] + 1;
+            Application.UnLock();
+        }
+        protected void Session_End(object sender, EventArgs e)
+        {
+            Application.Lock();
+            Application["count"] = (int)Application["count"] - 1;
+            Application.UnLock();
+        }
+        protected void Application_End(object sender, EventArgs e)
+        {
+        }
+
+    }
+}
+-------------------------------------
+WebForm1.aspx
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace WebApplication23
+{
+    public partial class WebForm1 : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Response.Write("No of Users Connected are " + Application["count"].ToString());
+        }
+
+        protected void Button1_Click(object sender, EventArgs e)
+        {
+
+            Response.Cookies["name"].Value = TextBox1.Text;
+            Response.Cookies["address"].Value = TextBox2.Text;
+            Response.Cookies["name"].Expires = DateTime.Today.AddHours(1);
+            Response.Redirect("WebForm2.aspx");
+            // By Using QueryString
+            //  Response.Redirect("WebForm2.aspx?name=" + TextBox1.Text + "&address=" + TextBox2.Text);
+        }
+
+        protected void Button2_Click(object sender, EventArgs e)
+        {
+            Application["msg"] = "ASP.Net Web Site";
+            Session["name"] = TextBox1.Text;
+            Session["address"] = TextBox2.Text;
+            Response.Redirect("WebForm2.aspx");
+        }
+    }
+}
+--------------------
+WebForm2.aspx
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace WebApplication23
+{
+    public partial class WebForm2 : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+            //HttpCookie cookie = new HttpCookie("name");
+            //if( Request.Cookies["name"].Value!=null)
+            //{
+            //    TextBox1.Text = Request.Cookies["name"].Value.ToString();
+            //}
+            //if (Request.Cookies["address"].Value != null)
+            //{
+            //    TextBox2.Text = Request.Cookies["address"].Value.ToString();
+            //}
+            if (Application["msg"] != null)
+                Response.Write(Application["msg"].ToString());
+            if (Session["name"] != null)
+                TextBox1.Text = Session["name"].ToString();
+            if (Session["address"] != null)
+                TextBox2.Text = Session["address"].ToString();
+
+
+            //if (Request.QueryString["name"] != null)
+            //    TextBox1.Text = Request["name"].ToString();
+
+            //if (Request.QueryString["address"] != null)
+            //    TextBox2.Text = Request["address"].ToString();
+
+        }
+    }
+}
+
+----------- Web.config
+
+ <system.web>
+    <sessionState mode="InProc" timeout="300"/>
+    <!--<sessionState mode="StateServer" stateConnectionString="tcp:localhost"/>-->
